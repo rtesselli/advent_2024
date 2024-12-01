@@ -13,10 +13,7 @@ def distance(a, b) -> int:
 
 def similarity(a, b) -> int:
     counts = Counter(b)
-    score = 0
-    for value in a:
-        score += value * counts[value]
-    return score
+    return sum(value * counts[value] for value in a)
 
 
 if __name__ == '__main__':
