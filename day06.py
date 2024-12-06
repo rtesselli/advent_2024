@@ -52,16 +52,14 @@ def simulate(blocks: set[Point], start: Point) -> tuple[dict[Point, int], bool]:
     return marks, in_bounds(curr_pos)
 
 
-def find_loops(blocks: set[Point], start: Point) -> int:
+def find_loops(blocks: set[Point], start: Point, passed_positions: dict[Point, int]) -> int:
     original_blocks = copy(blocks)
     counts = 0
-    for irow in range(n_rows):
-        for icol in range(n_cols):
-            if (irow, icol) not in blocks:
-                blocks = copy(original_blocks)
-                blocks.add((irow, icol))
-                _, is_loop = simulate(blocks, start)
-                counts += int(is_loop)
+    for irow, icol in passed_positions.keys():
+        blocks = copy(original_blocks)
+        blocks.add((irow, icol))
+        _, is_loop = simulate(blocks, start)
+        counts += int(is_loop)
     return counts
 
 
@@ -69,4 +67,4 @@ if __name__ == '__main__':
     blockers, start_point, n_rows, n_cols = load_values()
     positions, _ = simulate(blockers, start_point)
     print(len(positions))
-    print(find_loops(blockers, start_point))
+    print(find_loops(blockers, start_point, positions))
