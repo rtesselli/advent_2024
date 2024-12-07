@@ -43,8 +43,6 @@ def is_correct2(problem: tuple[int, list[int]]) -> bool:
             remain = str(curr).removesuffix(str(last_operand))
             if not remain:
                 return True
-            if remain == '-':
-                print(curr, last_operand)
             ok = rec(int(remain), operands[:-1])
             if ok:
                 return True
