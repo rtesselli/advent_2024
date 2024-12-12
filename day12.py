@@ -13,11 +13,8 @@ def in_bounds(x, y):
 
 
 DIRECTIONS = {(-1, 0), (1, 0), (0, -1), (0, 1)}
+# ALL_DIRECTIONS = {(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)}
 Point = tuple[int, int]
-
-
-def get_perimeter(r: int, c: int, neighbors: set[tuple[int, int]]) -> set[tuple[int, int]]:
-    return set()
 
 
 def get_regions(matrix: np.ndarray) -> dict[str, list[set[Point]]]:
@@ -42,8 +39,21 @@ def get_regions(matrix: np.ndarray) -> dict[str, list[set[Point]]]:
     return regions
 
 
+def get_cost(region: set[Point]) -> int:
+    def get_perimeter(r: int, c: int) -> set[Point]:
+        return {(r + delta_row, c + delta_col) for delta_row, delta_col in DIRECTIONS if
+                (r + delta_row, c + delta_col) not in region}
+
+    area = len(region)
+    perimeter = defaultdict(int)
+    for row, col in region:
+        boundaries = get_perimeter(row, col)
+        for position in boundaries:
+            perimeter[position] += 1
+    return area * sum(perimeter.values())
+
+
 if __name__ == '__main__':
     matrix = load_matrix()
     regions = get_regions(matrix)
-    print(regions)
-
+    print(sum(get_cost(region) for key, sub_regions in regions.items() for region in sub_regions))
