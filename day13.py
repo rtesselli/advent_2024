@@ -1,6 +1,7 @@
 from pathlib import Path
 from dataclasses import dataclass
 import re
+import numpy as np
 
 Point = tuple[int, int]
 
@@ -36,21 +37,22 @@ def load_values() -> list[Problem]:
     return problems
 
 
-def get_best(problem: Problem) -> Point | None:
-    # best = None
-    min_cost = None
-    for n_a in range(1, 101):
-        for n_b in range(1, 101):
-            target = (n_a * problem.button_a.delta_x + n_b * problem.button_b.delta_x,
-                      n_a * problem.button_a.delta_y + n_b * problem.button_b.delta_y)
-            if target == problem.prize_coords:
-                cost = BUTTON_A_COST * n_a + BUTTON_B_COST * n_b
-                if min_cost is None or cost < min_cost:
-                    min_cost = cost
-                    # best = (n_a, n_b)
-    return min_cost
+def solve(problem: Problem) -> int:
+    delta_matrix = np.array(
+        [[problem.button_a.delta_x, problem.button_b.delta_x], [problem.button_a.delta_y, problem.button_b.delta_y]])
+    target_vector = np.array([[problem.prize_coords[0]], [problem.prize_coords[1]]])
+    try:
+        inv_delta = np.linalg.inv(delta_matrix)
+    except:
+        return 0
+    result = inv_delta.dot(target_vector)
+    cost_vector = np.array([BUTTON_A_COST, BUTTON_B_COST])
+    out = cost_vector.dot(result)[0]
+    if out == int(out):
+        return int(out)
+    return 0
 
 
 if __name__ == '__main__':
     problems = load_values()
-    print(sum(get_best(problem) or 0 for problem in problems))
+    print(sum(solve(problem) or 0 for problem in problems))
