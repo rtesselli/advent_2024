@@ -45,8 +45,8 @@ def solve(problem: Problem, ignore_big: bool = True) -> int:
     d_yb = problem.button_b.delta_y
     n_b = (y_t * d_xa - x_t * d_ya) // (d_xa * d_yb - d_xb * d_ya)
     n_a = (x_t - n_b * d_xb) // d_xa
-    if not (n_a * problem.button_a.delta_x + n_b * problem.button_b.delta_x == problem.prize_coords[0] and
-            n_a * problem.button_a.delta_y + n_b * problem.button_b.delta_y == problem.prize_coords[1]):
+    if not (n_a * d_xa + n_b * d_xb == x_t and
+            n_a * d_ya + n_b * d_yb == y_t):
         return 0
     if ignore_big:
         if n_a >= 100 or n_b >= 100:
