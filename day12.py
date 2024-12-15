@@ -2,7 +2,6 @@ from pathlib import Path
 
 import numpy as np
 from collections import defaultdict
-from itertools import groupby
 
 
 def load_matrix() -> np.ndarray:
@@ -40,51 +39,49 @@ def get_regions(matrix: np.ndarray) -> dict[str, list[set[Point]]]:
     return regions
 
 
+def get_corners(region: set[Point]) -> int:
+    def count_corners(point: Point) -> int:
+        curr_x, curr_y = point
+        neighbors = set()
+        for delta_x, delta_y in DIRECTIONS:
+            if (curr_x + delta_x, curr_y + delta_y) in region:
+                neighbors.add((delta_x, delta_y))
+        if len(neighbors) == 0:
+            return 4
+        if len(neighbors) == 1:
+            return 2
+        if len(neighbors) == 2:
+            if (0, -1) in neighbors and (-1, 0) in neighbors:
+                return 1 + ((curr_x - 1, curr_y - 1) not in region)
+            if (0, -1) in neighbors and (1, 0) in neighbors:
+                return 1 + ((curr_x + 1, curr_y - 1) not in region)
+            if (0, 1) in neighbors and (-1, 0) in neighbors:
+                return 1 + ((curr_x - 1, curr_y + 1) not in region)
+            if (0, 1) in neighbors and (1, 0) in neighbors:
+                return 1 + ((curr_x + 1, curr_y + 1) not in region)
+        if len(neighbors) == 3:
+            if (1, 0) not in neighbors:
+                return int((curr_x - 1, curr_y - 1) not in region) + int((curr_x - 1, curr_y + 1) not in region)
+            if (-1, 0) not in neighbors:
+                return int((curr_x + 1, curr_y - 1) not in region) + int((curr_x + 1, curr_y + 1) not in region)
+            if (0, 1) not in neighbors:
+                return int((curr_x - 1, curr_y - 1) not in region) + int((curr_x + 1, curr_y - 1) not in region)
+            if (0, -1) not in neighbors:
+                return int((curr_x - 1, curr_y + 1) not in region) + int((curr_x + 1, curr_y + 1) not in region)
+        if len(neighbors) == 4:
+            return int((curr_x - 1, curr_y - 1) not in region) + int((curr_x + 1, curr_y - 1) not in region) + int(
+                (curr_x - 1, curr_y + 1) not in region) + int((curr_x + 1, curr_y + 1) not in region)
+        return 0
+
+    return sum(
+        count_corners(point) for point in region
+    )
+
+
 def get_cost(region: set[Point]) -> tuple[int, int]:
     def get_perimeter(r: int, c: int) -> set[Point]:
         return {(r + delta_row, c + delta_col) for delta_row, delta_col in DIRECTIONS if
                 (r + delta_row, c + delta_col) not in region}
-
-    def get_discounts(points: dict[Point, int]) -> int:
-        expanded = []
-        for key, count in points.items():
-            expanded.extend([key] * count)
-        to_discount = 0
-        by_row = sorted(expanded, key=lambda x: x[0])
-        for k, group in groupby(by_row, lambda x: x[0]):
-            group = sorted(group, key=lambda x: x[1])
-            size = 0
-            while group:
-                to_remove = [0]
-                _, curr_y = group[0]
-                for i, (_, next_y) in enumerate(group[1:]):
-                    if next_y > curr_y + 1:
-                        break
-                    elif next_y == curr_y + 1:
-                        size += 1
-                        to_remove.append(i)
-                        curr_y = next_y
-                for i in to_remove[::-1]:
-                    group.pop(i)
-            to_discount += size
-        by_col = sorted(expanded, key=lambda x: x[1])
-        for k, group in groupby(by_col, lambda x: x[1]):
-            group = sorted(group, key=lambda x: x[0])
-            size = 0
-            while group:
-                to_remove = [0]
-                curr_x, _ = group[0]
-                for i, (next_x, _) in enumerate(group[1:]):
-                    if next_x > curr_x + 1:
-                        break
-                    elif next_x == curr_x + 1:
-                        size += 1
-                        to_remove.append(i)
-                        curr_x = next_x
-                for i in to_remove[::-1]:
-                    group.pop(i)
-            to_discount += size
-        return to_discount
 
     area = len(region)
     perimeter = defaultdict(int)
@@ -93,9 +90,12 @@ def get_cost(region: set[Point]) -> tuple[int, int]:
         for position in boundaries:
             perimeter[position] += 1
     element = list(region)[0]
-    # print(matrix[element[0], element[1]],area, sum(perimeter.values()), sum(perimeter.values()) - get_discounts(perimeter))
-    print(matrix[element[0], element[1]], area, sum(perimeter.values()) - get_discounts(perimeter))
-    return area * sum(perimeter.values()), area * (sum(perimeter.values()) - get_discounts(perimeter))
+    corners = get_corners(region)
+    print(matrix[element[0], element[1]], area, corners)
+    return area * sum(perimeter.values()), area * corners
+
+
+# F +1, V +4, J +2, E +6,
 
 
 if __name__ == '__main__':
