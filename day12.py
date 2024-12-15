@@ -89,9 +89,7 @@ def get_cost(region: set[Point]) -> tuple[int, int]:
         boundaries = get_perimeter(row, col)
         for position in boundaries:
             perimeter[position] += 1
-    element = list(region)[0]
     corners = get_corners(region)
-    print(matrix[element[0], element[1]], area, corners)
     return area * sum(perimeter.values()), area * corners
 
 
