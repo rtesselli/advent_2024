@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass
 import numpy as np
 from matplotlib import pyplot as plt
+from itertools import groupby
 
 Point = tuple[int, int]
 
@@ -39,19 +40,26 @@ def step(position: Point, velocity: Point) -> Point:
     return (position_x + v_x) % MATRIX_ROWS, (position_y + v_y) % MATRIX_COLS
 
 
-def show(robots: list[Robot]) -> None:
+def show(robots: list[Robot], step: int) -> None:
     matrix = np.zeros((MATRIX_ROWS, MATRIX_COLS), dtype=np.uint8)
     for robot in robots:
         x, y = robot.position
         matrix[x, y] = 1
-    plt.imshow(matrix)
-    plt.show()
+    for line in matrix:
+        try:
+            consecutive = max(sum(1 for _ in g) for k, g in groupby(line.tolist()) if k == 1)
+        except:
+            consecutive = 0
+        if consecutive > 20:
+            print(step)
+            plt.imshow(matrix)
+            plt.show()
 
 
 
 def simulate(robots: list[Robot], steps: int) -> list[Robot]:
     for step_n in range(steps):
-        show(robots)
+        show(robots, step_n)
         for robot in robots:
             robot.position = step(robot.position, robot.velocity)
     return robots
@@ -78,5 +86,5 @@ def count_qdrants(robots: list[Robot]) -> int:
 
 if __name__ == '__main__':
     robots = load_values()
-    robots = simulate(robots, 500)
+    robots = simulate(robots, 8190)
     print(count_qdrants(robots))
