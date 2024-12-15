@@ -80,7 +80,6 @@ def count_qdrants(robots: list[Robot]) -> int:
             count_tr += 1
         elif x > MATRIX_ROWS // 2 and y > MATRIX_COLS // 2:
             count_br += 1
-    print(count_tl, count_tr, count_bl, count_br)
     return count_tl * count_tr * count_bl * count_br
 
 
